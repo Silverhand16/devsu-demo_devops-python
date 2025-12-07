@@ -89,6 +89,7 @@ NGINX Ingress Controller
 Cert-Manager + Let's Encrypt
 GitHub Actions
 
+---
 ## Pasos para crear Service Account para Terraform (Google Cloud)
 1) Crear Service Account
 URL: https://console.cloud.google.com/iam-admin/serviceaccounts
@@ -203,50 +204,48 @@ devsu-demo-devops-python/
 ├── README.md
 └── .github/workflows/deploy.yml
 ```
-
+---
 ## Despliegue en Docker Desktop + Kubernetes Local
-1️⃣ Activar Kubernetes en Docker Desktop
-Settings → Kubernetes →
-Enable Kubernetes
-
-bash
-Copiar código
+1️) Activar Kubernetes en Docker Desktop
+Settings → Kubernetes → Enable Kubernetes
+```bash
 kubectl get nodes
+```
 Debe mostrar:
-
-Copiar código
+```bash
 docker-desktop   Ready
-2️⃣ Clonar proyecto
-bash
-Copiar código
+```
+2️) Clonar proyecto
+```bash
 git clone https://github.com/Silverhand16/devsu-demo_devops-python.git
 cd devsu-demo-devops-python
-3️⃣ Construir imagen Docker local
-bash
-Copiar código
+```
+3️) Construir imagen Docker local
+```bash
 docker build -t demo-api:local .
 docker images
-4️⃣ Crear ConfigMap y Secret
-bash
-Copiar código
+```
+4️) Crear ConfigMap y Secret
+```bash
 kubectl apply -f k8s/configmap.yaml
 kubectl apply -f k8s/secret.yaml
-5️⃣ Editar Deployment para usar la imagen local
+```
+5️) Editar Deployment para usar la imagen local
 En k8s/deployment.yaml:
-
-yaml
-Copiar código
+```bash
 image: demo-api:local
 imagePullPolicy: Never
-6️⃣ Aplicar recursos
-bash
-Copiar código
+```
+6️) Aplicar recursos
+```bash
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
-7️⃣ Exponer API local
-bash
-Copiar código
+```
+7️) Exponer API local
+```bash
 kubectl port-forward svc/devsu-demo-service 8000:8000
+```
 Abrir en:
+```bash
 http://localhost:8000
-
+```
