@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devsu-demo-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: devsu-demo
+  template:
+    metadata:
+      labels:
+        app: devsu-demo
+    spec:
+      containers:
+        - name: devsu-demo
+          image: us-central1-docker.pkg.dev/devsu-examen/devsu-repo/devsu-demo-app:latest
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: devsu-config
+            - secretRef:
+                name: devsu-secret
+          env:
+            - name: DJANGO_ALLOWED_HOSTS
+              value: "prueba-devops.duckdns.org,34.45.184.235,localhost"
