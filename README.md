@@ -14,21 +14,39 @@ Este repositorio contiene una API **Django** desplegada automáticamente utiliza
 
 # Arquitectura General del Proyecto
 
+```text
++-------------------------+
+|    GitHub Repository    |
++-----------+-------------+
+            |
+            v CI/CD
++-------------------------+       +------------------------------+
+|    GitHub Actions (CI)  |       |    Terraform on local host   |
+|  - Lint Python          |       |  - Creates GKE cluster       |
+|  - Validate K8s         |       |  - Creates Node Pool         |
+|  - Validate Terraform   |       |  - Outputs kubeconfig        |
++-----------+-------------+       +------------------------------+
+            |
+            v
++-----------------------------+
+|     Google Cloud Platform   |
+|  +------------------------+ |
+|  |      GKE Cluster       | |
+|  |  - Deployment          | |
+|  |  - Service             | |
+|  |  - Ingress (Nginx)     | |
+|  |  - Cert-Manager        | |
+|  +------------------------+ |
++-----------------------------+
+            |
+            v
++--------------------------------+
+|        HTTPS Public API        |
+| https://prueba-devops.duckdns.org |
++--------------------------------+
+```
 
-flowchart TD
-    A[Repositorio GitHub] --> B[GitHub Actions - CI/CD]
-    B -->|Lint + Validaciones + Terraform| C[Google Cloud Platform]
 
-    C --> D[GKE Cluster]
-    D --> E[Deployment]
-    E --> F[Service]
-    F --> G[NGINX Ingress]
-
-    G --> H[Cert-Manager]
-    H --> I[Let's Encrypt - Servidor ACME]
-
-    I --> J[Certificado TLS almacenado en Kubernetes]
-    G --> K[API Pública HTTPS<br>https://prueba-devops.duckdns.org]
 Infraestructura creada con Terraform
 css
 Copiar código
