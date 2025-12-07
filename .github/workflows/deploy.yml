@@ -1,50 +1,54 @@
-name: Deploy to GKE
+name: Validate DevOps Project
 
 on:
   push:
-    branches: ["main"]
-
-env:
-  PROJECT_ID: devsu-examen
-  GAR_LOCATION: us-central1
-  GAR_REPO: devsu-repo
-  IMAGE_NAME: devsu-demo-app
-  CLUSTER_NAME: devsu-cluster
-  CLUSTER_REGION: us-central1
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
-  deploy:
+  validate:
+    name: Validate Terraform, Kubernetes and Python
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
+      - name: Install Python
+        uses: actions/setup-python@v4
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          python-version: "3.11"
 
-      - name: Configure Docker for Artifact Registry
+      - name: Install requirements
         run: |
-          gcloud auth configure-docker $GAR_LOCATION-docker.pkg.dev --quiet
+          pip install -r requirements.txt
 
-      - name: Build and push Docker image
+      - name: Lint Python
         run: |
-          docker build -t $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest .
-          docker push $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest
+          python -m py_compile $(git ls-files '*.py')
 
-      - name: Connect to GKE cluster
-        uses: google-github-actions/get-gke-credentials@v2
-        with:
-          cluster_name: ${{ env.CLUSTER_NAME }}
-          location: ${{ env.CLUSTER_REGION }}
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
 
-      - name: Apply Kubernetes manifests
+      - name: Terraform Init (no backend)
+        run: terraform -chdir=terraform init -backend=false
+
+      - name: Terraform Validate
+        run: terraform -chdir=terraform validate
+
+      - name: Install kubeval
         run: |
-          kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml
-          kubectl apply -f k8s/ingress.yaml
+          curl -s https://api.github.com/repos/instrumenta/kubeval/releases/latest \
+            | grep browser_download_url \
+            | grep linux-amd64 \
+            | cut -d '"' -f 4 \
+            | wget -qi -
+          chmod +x kubeval* && sudo mv kubeval* /usr/local/bin/kubeval
 
-      - name: Verify rollout status
-        run: kubectl rollout status deployment/devsu-demo-deployment
+      - name: Validate Kubernetes Manifests
+        run: kubeval k8s/*.yaml
+
+      - name: Done
+        run: echo "✔️ Validation complete. For real deployment, run terraform apply manually."
+
