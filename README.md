@@ -1,61 +1,31 @@
-#Devsu Demo DevOps 
+# Devsu Demo DevOps
 
-## Getting Started
-Este repositorio contiene una API Django desplegada automáticamente usando:
+Este repositorio contiene una API **Django** desplegada automáticamente usando:
 
-Terraform (infraestructura)
-Google Kubernetes Engine (GKE)
-Docker
-NGINX Ingress Controller
-Cert-Manager + Let's Encrypt
-DuckDNS como DNS dinámico
+- **Terraform** (infraestructura)
+- **Google Kubernetes Engine (GKE)**
+- **Docker**
+- **NGINX Ingress Controller**
+- **Cert-Manager + Let's Encrypt**
+- **DuckDNS** como DNS dinámico
+- **GitHub Actions (CI)**
 
-## Getting Started
-##Diagrama General de Arquitectura
-+------------------------+
-|    GitHub Repository   |
-+-----------+------------+
-            |
-            v CI/CD
-+------------------------+       +---------------------------+
-|  GitHub Actions (CI)   |       |  Terraform on local host |
-|  - Lint Python         |       |  - Creates GKE cluster   |
-|  - Validate K8s        |       |  - Creates Node Pool     |
-|  - Validate Terraform  |       |  - Outputs kubeconfig    |
-+-----------+------------+       +---------------------------+
-            |
-            v
-+---------------------------+
-| Google Cloud Platform     |
-| +-----------------------+ |
-| | GKE Cluster           | |
-| | - Deployment          | |
-| | - Service             | |
-| | - Ingress (Nginx)     | |
-| | - Cert-Manager        | |
-| +-----------------------+ |
-+---------------------------+
-            |
-            v
-+-------------------------------+
-|  HTTPS Public API             |
-|  https://prueba-devops.duckdns.org  |
-+-------------------------------+
+---
 
+# 🚀 Arquitectura General
 
-Infraestructura creada por Terraform
-┌───────────────────────────────────────────┐
-│               Terraform                   │
-│  main.tf, variables.tf, outputs.tf        │
-└──────────────────────────┬────────────────┘
-                           │ creates
-                           ▼
-┌───────────────────────────────────────────┐
-│                Google Cloud               │
-│   • GKE Cluster (devsu-demo-cluster)      │
-│   • Node Pool (1 e2-medium node)          │
-│   • Networking + IP Allocation            │
-└───────────────────────────────────────────┘
+flowchart TD
+    A[GitHub Repository] --> B[GitHub Actions CI/CD]
+    B -->|Lint + Validate + Terraform| C[Google Cloud Platform]
+    C --> D[GKE Cluster]
+    D --> E[Deployment]
+    E --> F[Service]
+    F --> G[NGINX Ingress]
+    G --> H[Cert-Manager]
+    H --> I[Let's Encrypt ACME Server]
+    I --> J[TLS Secret in Kubernetes]
+    G --> K[HTTPS Public API<br>https://prueba-devops.duckdns.org]
+
 
 Diagrama de Contenedores (Docker → GCR → GKE)
 Local Dev Machine
