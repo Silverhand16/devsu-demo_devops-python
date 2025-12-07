@@ -12,7 +12,7 @@ Este repositorio contiene una API **Django** desplegada automáticamente usando:
 
 ---
 
-# 🚀 Arquitectura General
+# Arquitectura General
 
 flowchart TD
     A[GitHub Repository] --> B[GitHub Actions CI/CD]
@@ -28,41 +28,26 @@ flowchart TD
 
 
 Diagrama de Contenedores (Docker → GCR → GKE)
-Local Dev Machine
-┌────────────────────────┐
-│  Docker build .        │
-│  Image tagged:         │
-│  gcr.io/.../demo-api:v1│
-└──────────────┬─────────┘
-               │ push
-               ▼
- Google Container Registry (GCR)
-┌──────────────────────────────┐
-│ Stores production images     │
-└──────────────┬───────────────┘
-               │ pull
-               ▼
-GKE Nodes
-┌──────────────────────────────┐
-│ Container Runtime loads image│
-│ Pod runs Django API          │
-└──────────────────────────────┘
+flowchart TD
+    A[Local Dev Machine] -->|docker build| B[gcr.io/.../demo-api:v1]
+    B -->|docker push| C[Google Container Registry]
+    C -->|pull| D[GKE Nodes]
+    D --> E[Pod running Django API]
 
 Diagrama Cert-Manager + Let's Encrypt
-User visits: https://prueba-devops.duckdns.org
-                  │
-                  ▼
-         NGINX Ingress (K8s)
-                  │
-                  ▼
-         Cert-Manager Webhook
-                  │
-                  ▼
-         Let's Encrypt ACME Server
-                  │
-        Issues TLS Certificates
-                  ▼
-   Certificate stored as Secret in Kubernetes
+sequenceDiagram
+    participant U as User
+    participant I as NGINX Ingress
+    participant C as Cert-Manager
+    participant L as Let's Encrypt
+
+    U->>I: HTTPS Request
+    I->>C: Request certificate
+    C->>L: ACME HTTP-01 Challenge
+    L->>C: Validates Challenge
+    C->>I: Stores TLS Secret
+    I->>U: HTTPS Response (Valid Certificate)
+
 
 Diagrama del Pipeline CI
 
