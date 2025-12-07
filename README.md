@@ -46,72 +46,108 @@ Este repositorio contiene una API **Django** desplegada automáticamente utiliza
 +--------------------------------+
 ```
 
-
 Infraestructura creada con Terraform
-css
-Copiar código
-terraform/
-├── main.tf
-├── variables.tf
-├── outputs.tf
-└── credentials.json
-Terraform despliega:
+```text
+Infraestructura creada por Terraform
 
-Cluster GKE: devsu-demo-cluster
-Node Pool: 1 nodo e2-medium
-Networking + asignación de IPs
-kubeconfig para acceso al cluster
++-----------------------------------------------------+
+|                     Terraform                       |
+|        main.tf, variables.tf, outputs.tf            |
++--------------------------+--------------------------+
+                           |
+                           | creates
+                           v
++-----------------------------------------------------+
+|                     Google Cloud                    |
+|  • GKE Cluster (devsu-demo-cluster)                 |
+|  • Node Pool (1 e2-medium node)                     |
+|  • Networking + IP Allocation                       |
++-----------------------------------------------------+
+```
 
-Flujo de Contenedores (Docker → GCR → GKE)
+Diagrama de Contenedores (Docker → GCR → GKE)
+```text
++-----------------------------------------------------+
+|                   Docker build .                    |
+|                   Image tagged:                     |
+|                 gcr.io/.../demo-api:v1              |
++--------------------------+--------------------------+
+                           |
+                           | push
+                           v
+                 Google Container Registry (GCR)
 
-flowchart TD
-    A[Máquina local] -->|docker build| B[gcr.io/.../demo-api:v1]
-    B -->|docker push| C[Google Container Registry]
-    C -->|pull| D[Nodos del cluster GKE]
-    D --> E[Pod ejecutando la API Django]
-    
-Flujo HTTPS con Cert-Manager + Let's Encrypt
-sequenceDiagram
-    participant U as Usuario
-    participant I as NGINX Ingress
-    participant C as Cert-Manager
-    participant L as Let's Encrypt
-    
-    U->>I: Solicitud HTTPS
-    I->>C: Solicitud de certificado
-    C->>L: Desafío ACME HTTP-01
-    L->>C: Validación exitosa
-    C->>I: Certificado TLS emitido y guardado
-    I->>U: Respuesta HTTPS segura
-    
-Pipeline de Integración Continua (GitHub Actions)
-flowchart TD
-    A[Push o Pull Request] --> B[GitHub Actions]
-    B --> C[1. Checkout del repositorio]
-    C --> D[2. Instalación de Python]
-    D --> E[3. Instalación de dependencias]
-    E --> F[4. Linter de Python]
-    F --> G[5. Terraform Init]
-    G --> H[6. Terraform Validate]
-    H --> I[7. Instalar Kubeconform]
-    I --> J[8. Validación de manifiestos Kubernetes]
-    J --> K[Resultado del CI]
-    
-Tecnologías Principales
-Python 3.11 / Django Rest Framework
-Docker
-Terraform
-Google Kubernetes Engine (GKE)
-Kubernetes (Deployments, Services, Ingress)
-NGINX Ingress Controller
-Cert-Manager + Let's Encrypt
-GitHub Actions
++-----------------------------------------------------+
+|               Stores production images              |
++--------------------------+--------------------------+
+                           |
+                           | pull
+                           v
+                       GKE Nodes
 
++-----------------------------------------------------+
+|      Container Runtime loads image                  |
+|      Pod runs Django API                            |
++-----------------------------------------------------+
+```
+
+Diagrama Cert-Manager + Let's Encrypt
+```text
+User visits: https://prueba-devops.duckdns.org
+                   |
+                   v
+            NGINX Ingress (K8s)
+                   |
+                   v
+          Cert-Manager Webhook
+                   |
+                   v
+        Let's Encrypt ACME Server
+                   |
+        Issues TLS Certificates
+                   |
+                   v
+   Certificate stored as Secret in Kubernetes
+```
+
+Diagrama del Pipeline CI
+```text
+          Developer Push / PR
+                   |
+                   v
+        GitHub Actions Workflow
+
++--------------------------------------------------+
+|  1. Checkout repo                                |
+|  2. Install Python                               |
+|  3. Install requirements                          |
+|  4. Lint Python                                   |
+|  5. Terraform init (safe mode)                    |
+|  6. Terraform validate                            |
+|  7. Install kubeconform                           |
+|  8. Validate Kubernetes manifests                 |
++--------------------------------------------------+
+
+                   |
+                   v
+              Status Badge
+      (CI Passed / Failed in GitHub)
+```
+
+**Tecnologías Principales**
+- Python 3.11 / Django Rest Framework
+- Docker
+- Terraform
+- Google Kubernetes Engine (GKE)
+- Kubernetes (Deployments, Services, Ingress)
+- NGINX Ingress Controller
+- Cert-Manager + Let's Encrypt
+- GitHub Actions
 ---
+
 ## Pasos para crear Service Account para Terraform (Google Cloud)
 1) Crear Service Account
 URL: https://console.cloud.google.com/iam-admin/serviceaccounts
-
 ```bash
 Nombre: terraform-admin
 ID: terraform-admin
