@@ -1,7 +1,5 @@
 # Devsu Demo DevOps
 
-# Devsu Demo DevOps
-
 Este repositorio contiene una API **Django** desplegada automáticamente utilizando:
 
 - **Terraform** (infraestructura como código)
@@ -14,9 +12,9 @@ Este repositorio contiene una API **Django** desplegada automáticamente utiliza
 
 ---
 
-# 🚀 Arquitectura General del Proyecto
+# Arquitectura General del Proyecto
 
-```mermaid
+
 flowchart TD
     A[Repositorio GitHub] --> B[GitHub Actions - CI/CD]
     B -->|Lint + Validaciones + Terraform| C[Google Cloud Platform]
@@ -31,7 +29,7 @@ flowchart TD
 
     I --> J[Certificado TLS almacenado en Kubernetes]
     G --> K[API Pública HTTPS<br>https://prueba-devops.duckdns.org]
-🧱 Infraestructura creada con Terraform
+Infraestructura creada con Terraform
 css
 Copiar código
 terraform/
@@ -41,44 +39,36 @@ terraform/
 └── credentials.json
 Terraform despliega:
 
-☸️ Cluster GKE: devsu-demo-cluster
+Cluster GKE: devsu-demo-cluster
+Node Pool: 1 nodo e2-medium
+Networking + asignación de IPs
+kubeconfig para acceso al cluster
 
-🧩 Node Pool: 1 nodo e2-medium
+Flujo de Contenedores (Docker → GCR → GKE)
 
-🌐 Networking + asignación de IPs
-
-🔐 kubeconfig para acceso al cluster
-
-🐳 Flujo de Contenedores (Docker → GCR → GKE)
-mermaid
-Copiar código
 flowchart TD
     A[Máquina local] -->|docker build| B[gcr.io/.../demo-api:v1]
     B -->|docker push| C[Google Container Registry]
-
     C -->|pull| D[Nodos del cluster GKE]
     D --> E[Pod ejecutando la API Django]
-🔐 Flujo HTTPS con Cert-Manager + Let's Encrypt
-mermaid
-Copiar código
+    
+Flujo HTTPS con Cert-Manager + Let's Encrypt
 sequenceDiagram
     participant U as Usuario
     participant I as NGINX Ingress
     participant C as Cert-Manager
     participant L as Let's Encrypt
-
+    
     U->>I: Solicitud HTTPS
     I->>C: Solicitud de certificado
     C->>L: Desafío ACME HTTP-01
     L->>C: Validación exitosa
     C->>I: Certificado TLS emitido y guardado
     I->>U: Respuesta HTTPS segura
-🔄 Pipeline de Integración Continua (GitHub Actions)
-mermaid
-Copiar código
+    
+Pipeline de Integración Continua (GitHub Actions)
 flowchart TD
     A[Push o Pull Request] --> B[GitHub Actions]
-
     B --> C[1. Checkout del repositorio]
     C --> D[2. Instalación de Python]
     D --> E[3. Instalación de dependencias]
@@ -87,123 +77,110 @@ flowchart TD
     G --> H[6. Terraform Validate]
     H --> I[7. Instalar Kubeconform]
     I --> J[8. Validación de manifiestos Kubernetes]
-
     J --> K[Resultado del CI]
-🛠️ Tecnologías Principales
+    
+Tecnologías Principales
 Python 3.11 / Django Rest Framework
-
 Docker
-
 Terraform
-
 Google Kubernetes Engine (GKE)
-
 Kubernetes (Deployments, Services, Ingress)
-
 NGINX Ingress Controller
-
 Cert-Manager + Let's Encrypt
-
 GitHub Actions
 
-🔐 Crear Service Account para Terraform (Google Cloud)
-1️⃣ Crear Service Account
-URL:
-https://console.cloud.google.com/iam-admin/serviceaccounts
+## Pasos para crear Service Account para Terraform (Google Cloud)
+1) Crear Service Account
+URL: https://console.cloud.google.com/iam-admin/serviceaccounts
 
-makefile
-Copiar código
+```bash
 Nombre: terraform-admin
 ID: terraform-admin
 Descripción: Cuenta para automatización con Terraform
-2️⃣ Asignar permisos
+```
+2) Asignar permisos
 Roles necesarios:
-
-bash
-Copiar código
 roles/container.admin
 roles/compute.admin
 roles/storage.admin
 roles/iam.serviceAccountUser
-3️⃣ Crear una llave JSON
-Guardar el archivo como:
 
-bash
-Copiar código
+3) Crear una llave JSON
+Guardar el archivo como:
+```bash
 terraform/credentials.json
-4️⃣ Exportar variable de entorno
-bash
-Copiar código
+```
+4) Exportar variable de entorno
+```bash
 $env:GOOGLE_APPLICATION_CREDENTIALS="terraform/credentials.json"
-5️⃣ Autenticación
-bash
-Copiar código
+```
+5) Autenticación
+```bash
 gcloud auth activate-service-account --key-file terraform/credentials.json
 gcloud projects list
-📦 Replicar el Proyecto Desde GitHub
-1️⃣ Clonar repositorio
-bash
-Copiar código
+```
+# Pasos para replicar el proyecto usando el repositorio de Github
+1) Clonar repositorio
+```bash
 git clone https://github.com/Silverhand16/devsu-demo_devops-python.git
 cd devsu-demo-devops-python
-☁️ Crear Infraestructura (Terraform)
-bash
-Copiar código
+```
+2) Crear Infraestructura (Terraform)
+```bash
 cd terraform
 terraform init
 terraform apply
-Obtener credenciales del cluster:
-
-bash
-Copiar código
+```
+3) Obtener credenciales del cluster:
+```bash
 gcloud container clusters get-credentials devsu-demo-cluster --region us-central1 --project <project_id>
-☸️ Configuración de Kubernetes
+```
+4) Configuración de Kubernetes
 Instalar NGINX Ingress Controller
-bash
-Copiar código
+```bash
 kubectl get pods -n ingress-nginx
-Instalar Cert-Manager
-bash
-Copiar código
+```
+5) Instalar Cert-Manager
+```bash
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.15.0/cert-manager.yaml
 kubectl get pods -n cert-manager
-Crear issuer y configuraciones
-bash
-Copiar código
+```
+6) Crear issuer y configuraciones
+```bash
 kubectl apply -f k8s/cluster-issuer-prod.yaml
 kubectl apply -f k8s/configmap.yaml
 kubectl apply -f k8s/secret.yaml
-🐳 Construcción y subida de imagen Docker
-bash
-Copiar código
+```
+7) Construcción y subida de imagen Docker
+```bash
 docker build -t gcr.io/<project_id>/demo-api:v1 .
 gcloud auth configure-docker
 docker push gcr.io/<project_id>/demo-api:v1
-🚀 Despliegue en Kubernetes (GKE)
-bash
-Copiar código
+```
+8) Despliegue en Kubernetes (GKE)
+```bash
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
 kubectl apply -f k8s/ingress.yaml
+```
 Verificar:
-
-bash
-Copiar código
+```bash
 kubectl get pods
 kubectl get svc
 kubectl get ingress
-🔐 Verificación de HTTPS
-bash
-Copiar código
+```
+9) Verificación de HTTPS
+```bash
 kubectl describe certificate
 kubectl get challenges -A
-Abrir en navegador:
+```
+10) Abrir en navegador:
+```bash
+https://prueba-devops.duckdns.org
+```
 
-👉 https://prueba-devops.duckdns.org
-
-📁 Estructura del Proyecto
-pgsql
-Copiar código
+## Estructura del Proyecto
+```bash
 devsu-demo-devops-python/
 ├── api/
 ├── demo/
@@ -225,7 +202,9 @@ devsu-demo-devops-python/
 ├── requirements.txt
 ├── README.md
 └── .github/workflows/deploy.yml
-🖥️ Despliegue en Docker Desktop + Kubernetes Local
+```
+
+## Despliegue en Docker Desktop + Kubernetes Local
 1️⃣ Activar Kubernetes en Docker Desktop
 Settings → Kubernetes →
 Enable Kubernetes
