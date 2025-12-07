@@ -12,7 +12,7 @@ Este repositorio contiene una API **Django** desplegada automáticamente utiliza
 
 ---
 
-# Arquitectura General del Proyecto
+## Arquitectura General del Proyecto
 
 ```text
 +-------------------------+
@@ -45,8 +45,9 @@ Este repositorio contiene una API **Django** desplegada automáticamente utiliza
 | https://prueba-devops.duckdns.org |
 +--------------------------------+
 ```
+---
 
-Infraestructura creada con Terraform
+## Infraestructura creada con Terraform
 ```text
 Infraestructura creada por Terraform
 
@@ -64,8 +65,9 @@ Infraestructura creada por Terraform
 |  • Networking + IP Allocation                       |
 +-----------------------------------------------------+
 ```
+---
 
-Diagrama de Contenedores (Docker → GCR → GKE)
+## Diagrama de Contenedores (Docker → GCR → GKE)
 ```text
 +-----------------------------------------------------+
 |                   Docker build .                    |
@@ -90,8 +92,9 @@ Diagrama de Contenedores (Docker → GCR → GKE)
 |      Pod runs Django API                            |
 +-----------------------------------------------------+
 ```
+---
 
-Diagrama Cert-Manager + Let's Encrypt
+## Diagrama Cert-Manager + Let's Encrypt
 ```text
 User visits: https://prueba-devops.duckdns.org
                    |
@@ -109,8 +112,9 @@ User visits: https://prueba-devops.duckdns.org
                    v
    Certificate stored as Secret in Kubernetes
 ```
+---
 
-Diagrama del Pipeline CI
+## Diagrama del Pipeline CI
 ```text
           Developer Push / PR
                    |
@@ -133,6 +137,7 @@ Diagrama del Pipeline CI
               Status Badge
       (CI Passed / Failed in GitHub)
 ```
+---
 
 **Tecnologías Principales**
 - Python 3.11 / Django Rest Framework
@@ -233,6 +238,7 @@ kubectl get challenges -A
 ```bash
 https://prueba-devops.duckdns.org
 ```
+---
 
 ## Estructura del Proyecto
 ```bash
