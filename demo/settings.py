@@ -20,12 +20,14 @@ SECRET_KEY = env("DJANGO_SECRET_KEY", default="dev-key")
 DEBUG = env.bool("DJANGO_DEBUG", default=True)
 
 # For Kubernetes / Ingress
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["*"])
-
+ALLOWED_HOSTS = env.list(
+    "DJANGO_ALLOWED_HOSTS",
+    default=["prueba-devops.duckdns.org", "localhost", "127.0.0.1"]
+)
 CSRF_TRUSTED_ORIGINS = [
-    f"http://{host}" for host in ALLOWED_HOSTS if host != "*"
+    f"http://{host}" for host in ALLOWED_HOSTS if host not in ["*", ""]
 ] + [
-    f"https://{host}" for host in ALLOWED_HOSTS if host != "*"
+    f"https://{host}" for host in ALLOWED_HOSTS if host not in ["*", ""]
 ]
 
 # ============================================================

@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: devsu-demo
-          image: us-central1-docker.pkg.dev/devsu-examen/devsu-repo/devsu-demo-app:latest
+          image: silversable16/devsu-demo-app:latest
           ports:
             - containerPort: 8000
           envFrom:
@@ -24,4 +24,4 @@ spec:
                 name: devsu-secret
           env:
             - name: DJANGO_ALLOWED_HOSTS
-              value: "prueba-devops.duckdns.org,34.45.184.235,localhost"
+              value: "prueba-devops.duckdns.org,34.171.99.230"

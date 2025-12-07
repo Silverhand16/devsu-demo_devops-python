@@ -17,6 +17,8 @@ resource "google_container_cluster" "gke" {
   name     = "devsu-demo-cluster"
   location = var.region
 
+  deletion_protection = false  
+
   remove_default_node_pool = true
   initial_node_count       = 1
 
